@@ -112,21 +112,21 @@ trap cleanup EXIT
 # 使用方法を表示する関数
 show_usage() {
     echo "使用方法: $0 <CTID> <コンテナ内のパス> <ホスト上の出力先パス>"
-    echo "説明: Proxmoxコンテナからホストへファイルやディレクトリをコピーします。"
-    echo "      cp コマンドと同様の動作をします。"
+    echo "説明: Proxmoxコンテナからホストへファイルやディレクトリを取得します。"
+    echo "      標準のpct pullコマンドを拡張し、より安全で使いやすい機能を提供します。"
     echo
     echo "オプション:"
     echo "  末尾のスラッシュ: コンテナ内のパスの末尾にスラッシュを付けると、"
-    echo "                     ディレクトリの中身のみをコピーします。"
+    echo "                     ディレクトリの中身のみを取得します。"
     echo
     echo "例:"
-    echo "  # ディレクトリごとコピー（/backup/container100/html/ が作成される）"
+    echo "  # ディレクトリごと取得（/backup/container100/html/ が作成される）"
     echo "  $0 100 /var/www/html /backup/container100/"
     echo
-    echo "  # ディレクトリの中身のみコピー（/backup/container100/ 直下にファイルがコピーされる）"
+    echo "  # ディレクトリの中身のみ取得（/backup/container100/ 直下にファイルが展開される）"
     echo "  $0 100 /var/www/html/ /backup/container100/"
     echo
-    echo "  # 単一ファイルのコピー"
+    echo "  # 単一ファイルの取得"
     echo "  $0 100 /etc/nginx/nginx.conf /backup/container100/"
     exit 1
 }
@@ -198,7 +198,7 @@ check_target_exists() {
         echo "警告: $target は既に存在します。"
         read -p "上書きしますか？ (y/N): " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            echo "コピーを中止します。"
+            echo "取得を中止します。"
             exit 1
         fi
         # バックアップを作成
@@ -265,12 +265,12 @@ check_special_permissions() {
         log_message "WARN" "以下のファイルに特殊な権限が設定されています:"
         printf '%s\n' "${special_files[@]/#/- }"
         if [ "$FORCE" = true ]; then
-            log_message "INFO" "特殊な権限を除去してコピーします。"
+            log_message "INFO" "特殊な権限を除去して取得します。"
             return 1
         fi
-        read -p "これらの権限を保持してコピーしますか？ (y/N): " response
+        read -p "これらの権限を保持して取得しますか？ (y/N): " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            log_message "INFO" "特殊な権限を除去してコピーします。"
+            log_message "INFO" "特殊な権限を除去して取得します。"
             return 1
         fi
     fi
@@ -308,10 +308,10 @@ handle_acls() {
     if [ "$has_acl" = true ]; then
         log_message "WARN" "ソースファイルにACLが設定されています。"
         if [ "$FORCE" = true ]; then
-            log_message "INFO" "ACLを保持してコピーします。"
+            log_message "INFO" "ACLを保持して取得します。"
             response="y"
         else
-            read -p "ACLを保持してコピーしますか？ (y/N): " response
+            read -p "ACLを保持して取得しますか？ (y/N): " response
         fi
         if [[ "$response" =~ ^[Yy]$ ]]; then
             if [ -n "$CTID" ] && pct status "$CTID" | grep -q "status: running"; then
@@ -371,9 +371,9 @@ check_contents_conflict() {
     if [ ${#symlinks[@]} -gt 0 ]; then
         log_message "WARN" "以下のシンボリックリンクが含まれています:"
         printf '%s\n' "${symlinks[@]/#/- }"
-        read -p "シンボリックリンクをコピーしますか？ (y/N): " response
+        read -p "シンボリックリンクを取得しますか？ (y/N): " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            log_message "INFO" "コピーを中止します。"
+            log_message "INFO" "取得を中止します。"
             exit 1
         fi
     fi
@@ -387,7 +387,7 @@ check_contents_conflict() {
             printf '%s\n' "${conflicts[@]/#/- }"
             read -p "上書きしますか？ (y/N): " response
             if [[ ! "$response" =~ ^[Yy]$ ]]; then
-                log_message "INFO" "コピーを中止します。"
+                log_message "INFO" "取得を中止します。"
                 exit 1
             fi
         fi
@@ -421,7 +421,7 @@ check_permissions() {
     fi
 }
 
-# rsyncでの安全なコピー
+# rsyncでの安全な取得
 rsync_with_permissions() {
     local src="$1"
     local dst="$2"
@@ -446,9 +446,9 @@ rsync_with_permissions() {
         rsync_opts="$rsync_opts --chmod=u=rwX,g=rX,o=rX"
     fi
 
-    # コピーの実行
+    # 取得の実行
     if ! rsync $rsync_opts "$src" "$dst"; then
-        log_message "ERROR" "rsyncでのコピーに失敗しました。"
+        log_message "ERROR" "rsyncでの取得に失敗しました。"
         return 1
     fi
 
@@ -491,7 +491,7 @@ extract_tar_with_permissions() {
 
 # コンテナの状態確認とファイルタイプの取得
 if pct status "$CTID" | grep -q "status: running"; then
-    log_message "INFO" "コンテナは実行中です。pct pullを使用してコピーを実行します..."
+    log_message "INFO" "コンテナは実行中です。pct pullを使用して取得を実行します..."
     
     # パーミッションチェック
     check_permissions "$HOST_PATH"
@@ -507,9 +507,9 @@ if pct status "$CTID" | grep -q "status: running"; then
             ;;
         symlink)
             echo "警告: パスがシンボリックリンクです: $CONTAINER_PATH"
-            read -p "シンボリックリンクをコピーしますか？ (y/N): " response
+            read -p "シンボリックリンクを取得しますか？ (y/N): " response
             if [[ ! "$response" =~ ^[Yy]$ ]]; then
-                echo "コピーを中止します。"
+                echo "取得を中止します。"
                 exit 1
             fi
             IS_DIR="no"
@@ -522,11 +522,11 @@ if pct status "$CTID" | grep -q "status: running"; then
 
     if [ "$IS_DIR" = "yes" ]; then
         if [ "$COPY_CONTENTS_ONLY" = true ]; then
-            # ディレクトリの中身をコピーする場合
+            # ディレクトリの中身を取得する場合
             mkdir -p "$HOST_PATH"
             check_contents_conflict "$CONTAINER_PATH" "$HOST_PATH"
         else
-            # ディレクトリごとコピーする場合、ターゲットの存在チェック
+            # ディレクトリごと取得する場合、ターゲットの存在チェック
             check_target_exists "$HOST_PATH/$(basename "$CONTAINER_PATH")"
         fi
     else
@@ -539,9 +539,9 @@ if pct status "$CTID" | grep -q "status: running"; then
     HOST_TEMP_DIR=$(mktemp -d)
     HOST_TEMP_TAR="$HOST_TEMP_DIR/temp.tar"
 
-    # tarファイルをコンテナからホストにコピー
+    # tarファイルをコンテナからホストに取得
     if ! pct pull $CTID $TEMP_TAR $HOST_TEMP_TAR; then
-        echo "エラー: tarファイルのコピーに失敗しました。"
+        echo "エラー: tarファイルの取得に失敗しました。"
         rm -rf "$HOST_TEMP_DIR"
         pct exec $CTID -- rm -f "$TEMP_TAR"
         exit 1
@@ -561,7 +561,7 @@ if pct status "$CTID" | grep -q "status: running"; then
     pct exec $CTID -- rm -f "$TEMP_TAR"
 
 else
-    log_message "INFO" "コンテナは停止中です。直接ファイルシステムからコピーを実行します..."
+    log_message "INFO" "コンテナは停止中です。直接ファイルシステムから取得を実行します..."
     
     # パーミッションチェック
     check_permissions "$HOST_PATH"
@@ -578,7 +578,7 @@ else
     FULL_SOURCE_PATH="$ROOTFS_PATH$CONTAINER_PATH"
     
     if [ ! -e "$FULL_SOURCE_PATH" ]; then
-        echo "エラー: コピー元のパスが存在しません: $CONTAINER_PATH"
+        echo "エラー: 取得元のパスが存在しません: $CONTAINER_PATH"
         exit 1
     fi
 
@@ -590,11 +590,11 @@ else
 
     if [ "$IS_DIR" = "yes" ]; then
         if [ "$COPY_CONTENTS_ONLY" = true ]; then
-            # ディレクトリの中身をコピーする場合
+            # ディレクトリの中身を取得する場合
             mkdir -p "$HOST_PATH"
             check_contents_conflict "$FULL_SOURCE_PATH" "$HOST_PATH"
         else
-            # ディレクトリごとコピーする場合、ターゲットの存在チェック
+            # ディレクトリごと取得する場合、ターゲットの存在チェック
             check_target_exists "$HOST_PATH/$(basename "$CONTAINER_PATH")"
         fi
     else
@@ -605,12 +605,12 @@ else
     # 出力先ディレクトリが存在しない場合は作成
     mkdir -p "$HOST_PATH"
 
-    # rsyncを使用してファイルをコピー（権限を考慮）
+    # rsyncを使用してファイルを取得（権限を考慮）
     if [ "$IS_DIR" = "yes" ]; then
         if [ "$COPY_CONTENTS_ONLY" = true ]; then
             BACKUP_DIR=$(create_backup "$HOST_PATH")
             if ! rsync_with_permissions "$FULL_SOURCE_PATH/" "$HOST_PATH/"; then
-                log_message "ERROR" "ファイルのコピーに失敗しました。"
+                log_message "ERROR" "ファイルの取得に失敗しました。"
                 restore_backup "$BACKUP_DIR" "$HOST_PATH"
                 exit 1
             fi
@@ -618,7 +618,7 @@ else
             target_dir="$HOST_PATH/$(basename "$CONTAINER_PATH")"
             BACKUP_DIR=$(create_backup "$target_dir")
             if ! rsync_with_permissions "$FULL_SOURCE_PATH" "$HOST_PATH/"; then
-                log_message "ERROR" "ファイルのコピーに失敗しました。"
+                log_message "ERROR" "ファイルの取得に失敗しました。"
                 restore_backup "$BACKUP_DIR" "$target_dir"
                 exit 1
             fi
@@ -627,23 +627,23 @@ else
         target_file="$HOST_PATH/$(basename "$CONTAINER_PATH")"
         BACKUP_DIR=$(create_backup "$target_file")
         if ! rsync_with_permissions "$FULL_SOURCE_PATH" "$HOST_PATH/"; then
-            log_message "ERROR" "ファイルのコピーに失敗しました。"
+            log_message "ERROR" "ファイルの取得に失敗しました。"
             restore_backup "$BACKUP_DIR" "$target_file"
             exit 1
         fi
     fi
 fi
 
-log_message "INFO" "コピーが完了しました。"
+log_message "INFO" "取得が完了しました。"
 if [ "$IS_DIR" = "yes" ]; then
     if [ "$COPY_CONTENTS_ONLY" = true ]; then
         log_message "INFO" "コンテナ $CTID の $CONTAINER_PATH/ の中身を"
-        log_message "INFO" "ホストの $HOST_PATH/ 配下に直接コピーしました。"
+        log_message "INFO" "ホストの $HOST_PATH/ 配下に直接取得しました。"
     else
         log_message "INFO" "コンテナ $CTID の $CONTAINER_PATH ディレクトリとその中身を"
-        log_message "INFO" "ホストの $HOST_PATH/ 配下にコピーしました。"
+        log_message "INFO" "ホストの $HOST_PATH/ 配下に取得しました。"
     fi
 else
     log_message "INFO" "コンテナ $CTID の $CONTAINER_PATH ファイルを"
-    log_message "INFO" "ホストの $HOST_PATH/ にコピーしました。"
+    log_message "INFO" "ホストの $HOST_PATH/ に取得しました。"
 fi 
