@@ -715,4 +715,7 @@ if [ "$IS_DIR" = "yes" ]; then
 else
     log_message "INFO" "コンテナ $CTID の $CONTAINER_PATH ファイルを"
     log_message "INFO" "ホストの $HOST_PATH/ に取得しました。"
-fi 
+fi
+
+# 明示的な成功終了
+exit 0 
