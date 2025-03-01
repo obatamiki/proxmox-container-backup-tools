@@ -33,7 +33,7 @@ Proxmoxコンテナ（LXC）からホストへのファイルやディレクト�
 #### 使用方法
 
 ```bash
-./pct_pull.sh [-f] <CTID> <コンテナ内のパス> <ホスト上の出力先パス>
+pct-pull [-f] <CTID> <コンテナ内のパス> <ホスト上の出力先パス>
 
 オプション:
   -f    確認プロンプトをスキップし、既存ファイルを上書き
@@ -43,19 +43,19 @@ Proxmoxコンテナ（LXC）からホストへのファイルやディレクト�
 
 1. ディレクトリごと取得:
 ```bash
-./pct_pull.sh 100 /var/www/html /backup/container100/
+pct-pull 100 /var/www/html /backup/container100/
 # 結果: /backup/container100/html/ が作成される
 ```
 
 2. ディレクトリの中身のみ取得:
 ```bash
-./pct_pull.sh 100 /var/www/html/ /backup/container100/
+pct-pull 100 /var/www/html/ /backup/container100/
 # 結果: /backup/container100/ 直下にファイルがコピーされる
 ```
 
 3. 単一ファイルの取得:
 ```bash
-./pct_pull.sh 100 /etc/nginx/nginx.conf /backup/container100/
+pct-pull 100 /etc/nginx/nginx.conf /backup/container100/
 # 結果: /backup/container100/nginx.conf が作成される
 ```
 
