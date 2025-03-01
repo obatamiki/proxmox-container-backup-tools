@@ -196,8 +196,6 @@ restore_backup() {
 check_target_exists() {
     local target="$1"
     if [ -e "$target" ]; then
-        log_message "WARN" "$target は既に存在します。"
-        
         # ディレクトリの場合、実際の衝突を確認
         if [ -d "$target" ]; then
             local conflicts=()
@@ -219,26 +217,41 @@ check_target_exists() {
             fi
 
             if [ ${#conflicts[@]} -gt 0 ]; then
-                log_message "INFO" "以下のファイル/ディレクトリが上書きされる可能性があります:"
+                log_message "WARN" "$target は既に存在し、以下のファイル/ディレクトリが上書きされる可能性があります:"
                 printf '%s\n' "${conflicts[@]/#/- }"
-            else
-                log_message "INFO" "既存のファイルと衝突する可能性のあるファイルは見つかりませんでした。"
+                
+                if [ "$FORCE" = true ]; then
+                    log_message "INFO" "強制モードが有効なため、自動的に上書きします。"
+                    BACKUP_DIR=$(create_backup "$target")
+                    return
+                fi
+
+                read -p "上書きしますか？ (y/N): " response
+                if [[ ! "$response" =~ ^[Yy]$ ]]; then
+                    echo "取得を中止します。"
+                    exit 1
+                fi
+                # バックアップを作成
+                BACKUP_DIR=$(create_backup "$target")
             fi
-        fi
+        else
+            # ファイルの場合は常に警告を表示
+            log_message "WARN" "$target は既に存在します。"
+            
+            if [ "$FORCE" = true ]; then
+                log_message "INFO" "強制モードが有効なため、自動的に上書きします。"
+                BACKUP_DIR=$(create_backup "$target")
+                return
+            fi
 
-        if [ "$FORCE" = true ]; then
-            log_message "INFO" "強制モードが有効なため、自動的に上書きします。"
+            read -p "上書きしますか？ (y/N): " response
+            if [[ ! "$response" =~ ^[Yy]$ ]]; then
+                echo "取得を中止します。"
+                exit 1
+            fi
+            # バックアップを作成
             BACKUP_DIR=$(create_backup "$target")
-            return
         fi
-
-        read -p "上書きしますか？ (y/N): " response
-        if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            echo "取得を中止します。"
-            exit 1
-        fi
-        # バックアップを作成
-        BACKUP_DIR=$(create_backup "$target")
     fi
 }
 
