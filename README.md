@@ -63,26 +63,27 @@ Proxmoxコンテナ（LXC）からホストへのファイルやディレクト�
 
 1. リポジトリをクローン:
 ```bash
-git clone https://github.com/obatamiki/proxmox-container-tools.git /opt/proxmox-container-tools
+cd /opt
+git clone https://github.com/obatamiki/proxmox-container-tools.git
 ```
 
-2. スクリプトに実行権限を付与:
+2. 実行権限を付与:
 ```bash
 chmod +x /opt/proxmox-container-tools/pct_pull.sh
 ```
 
-3. システム全体からアクセスできるようにシンボリックリンクを作成:
+3. シンボリックリンクを作成:
 ```bash
-ln -s /opt/proxmox-container-tools/pct_pull.sh /usr/local/bin/pct_pull
+ln -s /opt/proxmox-container-tools/pct_pull.sh /usr/local/bin/pct-pull
 ```
 
-これにより、`pct_pull`コマンドとしてどこからでも実行できるようになります。
+これにより、`pct-pull`コマンドとして実行できるようになります。
 
 ## アンインストール
 
 1. シンボリックリンクを削除:
 ```bash
-rm /usr/local/bin/pct_pull
+rm /usr/local/bin/pct-pull
 ```
 
 2. リポジトリを削除:
