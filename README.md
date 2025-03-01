@@ -1,6 +1,6 @@
-# Proxmox Container Tools
+# Proxmox Container Backup Tools
 
-Proxmox VE（Virtual Environment）用のコンテナ管理ユーティリティツール集です。
+Proxmox VE（Virtual Environment）用のコンテナバックアップ・ファイル管理ユーティリティツール集です。
 LXC（Linux Containers）のファイル管理やバックアップを支援する機能を提供します。
 
 ## ツール一覧
@@ -100,17 +100,17 @@ pct-pull 100 /etc/nginx/nginx.conf /backup/container100/
 1. リポジトリをクローン:
 ```bash
 cd /opt
-git clone https://github.com/obatamiki/proxmox-container-tools.git
+git clone https://github.com/obatamiki/proxmox-container-backup-tools.git
 ```
 
 2. 実行権限を付与:
 ```bash
-chmod +x /opt/proxmox-container-tools/pct-pull.sh
+chmod +x /opt/proxmox-container-backup-tools/pct-pull.sh
 ```
 
 3. シンボリックリンクを作成:
 ```bash
-ln -s /opt/proxmox-container-tools/pct-pull.sh /usr/local/bin/pct-pull
+ln -s /opt/proxmox-container-backup-tools/pct-pull.sh /usr/local/bin/pct-pull
 ```
 
 これにより、`pct-pull`コマンドとして実行できるようになります。
@@ -124,7 +124,7 @@ rm /usr/local/bin/pct-pull
 
 2. リポジトリを削除:
 ```bash
-rm -rf /opt/proxmox-container-tools
+rm -rf /opt/proxmox-container-backup-tools
 ```
 
 注: 設定ファイルやバックアップは作成されないため、上記の手順で完全に削除されます。
