@@ -5,7 +5,7 @@ LXC（Linux Containers）のファイル管理やバックアップを支援す�
 
 ## ツール一覧
 
-### pct_pull.sh
+### pct-pull.sh
 
 Proxmoxコンテナ（LXC）からホストへのファイルやディレクトリの取得を行うツールです。
 標準の`pct pull`コマンドを拡張し、より安全で使いやすい機能を提供します。
@@ -69,12 +69,12 @@ git clone https://github.com/obatamiki/proxmox-container-tools.git
 
 2. 実行権限を付与:
 ```bash
-chmod +x /opt/proxmox-container-tools/pct_pull.sh
+chmod +x /opt/proxmox-container-tools/pct-pull.sh
 ```
 
 3. シンボリックリンクを作成:
 ```bash
-ln -s /opt/proxmox-container-tools/pct_pull.sh /usr/local/bin/pct-pull
+ln -s /opt/proxmox-container-tools/pct-pull.sh /usr/local/bin/pct-pull
 ```
 
 これにより、`pct-pull`コマンドとして実行できるようになります。
