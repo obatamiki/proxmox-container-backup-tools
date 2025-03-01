@@ -72,6 +72,10 @@ if [[ "$CONTAINER_PATH" =~ [[:space:]] ]] || [[ "$HOST_PATH" =~ [[:space:]] ]]; 
     exit 1
 fi
 
+# パスの正規化
+CONTAINER_PATH=$(echo "$CONTAINER_PATH" | sed 's/\/\.\/*$//')
+HOST_PATH=$(echo "$HOST_PATH" | sed 's/\/\.\/*$//')
+
 # コンテナの存在確認
 if ! pct list | grep -q "^$CTID[[:space:]]"; then
     echo "エラー: コンテナ $CTID が存在しません。"
