@@ -82,6 +82,7 @@ chmod +x /opt/proxmox-container-tools/pct_pull.sh
   # Debian/Ubuntu系の場合
   apt install acl
   ```
+  ※ ACLツールがない場合でもスクリプトは動作しますが、ACLの保持機能は無効になります。
 
 注: その他の必要なコンポーネント（bash, tar, rsync）はProxmox VEに標準で含まれています。
 
