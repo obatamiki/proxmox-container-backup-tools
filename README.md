@@ -4,23 +4,25 @@ Proxmox VE用のコンテナ管理ユーティリティツール集です。
 
 ## ツール一覧
 
-### pct_cp.sh
+### pct_pull.sh
 
-Proxmoxコンテナからホストへのファイルやディレクトリのコピーを行うツールです。
-`cp`コマンドと同様の使い方で、コンテナ内のファイルやディレクトリを安全にコピーできます。
+Proxmoxコンテナからホストへのファイルやディレクトリの取得を行うツールです。
+標準の`pct pull`コマンドを拡張し、より安全で使いやすい機能を提供します。
 
 #### 特徴
 
-- コンテナの実行状態に関わらずコピー可能
+- コンテナの実行状態に関わらずファイル取得が可能
 - ディレクトリの再帰的コピーをサポート
 - ACLやシンボリックリンクの適切な処理
 - 特殊権限の管理
 - 安全なバックアップと復元機能
+- 既存ファイルの上書き確認
+- ディレクトリ内容の詳細なコピー制御
 
 #### 使用方法
 
 ```bash
-./pct_cp.sh [-f] <CTID> <コンテナ内のパス> <ホスト上の出力先パス>
+./pct_pull.sh [-f] <CTID> <コンテナ内のパス> <ホスト上の出力先パス>
 
 オプション:
   -f    確認プロンプトをスキップし、既存ファイルを上書き
@@ -28,21 +30,21 @@ Proxmoxコンテナからホストへのファイルやディレクトリのコ�
 
 #### 例
 
-1. ディレクトリごとコピー:
+1. ディレクトリごと取得:
 ```bash
-./pct_cp.sh 100 /var/www/html /backup/container100/
+./pct_pull.sh 100 /var/www/html /backup/container100/
 # 結果: /backup/container100/html/ が作成される
 ```
 
-2. ディレクトリの中身のみコピー:
+2. ディレクトリの中身のみ取得:
 ```bash
-./pct_cp.sh 100 /var/www/html/ /backup/container100/
+./pct_pull.sh 100 /var/www/html/ /backup/container100/
 # 結果: /backup/container100/ 直下にファイルがコピーされる
 ```
 
-3. 単一ファイルのコピー:
+3. 単一ファイルの取得:
 ```bash
-./pct_cp.sh 100 /etc/nginx/nginx.conf /backup/container100/
+./pct_pull.sh 100 /etc/nginx/nginx.conf /backup/container100/
 # 結果: /backup/container100/nginx.conf が作成される
 ```
 
@@ -55,7 +57,7 @@ git clone https://github.com/yourusername/proxmox-container-tools.git /opt/proxm
 
 2. スクリプトに実行権限を付与:
 ```bash
-chmod +x /opt/proxmox-container-tools/pct_cp.sh
+chmod +x /opt/proxmox-container-tools/pct_pull.sh
 ```
 
 ## 要件
