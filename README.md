@@ -63,7 +63,7 @@ Proxmoxコンテナ（LXC）からホストへのファイルやディレクト�
 
 1. リポジトリをクローン:
 ```bash
-git clone https://github.com/yourusername/proxmox-container-tools.git /opt/proxmox-container-tools
+git clone https://github.com/obatamiki/proxmox-container-tools.git /opt/proxmox-container-tools
 ```
 
 2. スクリプトに実行権限を付与:
