@@ -73,11 +73,15 @@ chmod +x /opt/proxmox-container-tools/pct_pull.sh
 
 ## 要件
 
-- Proxmox VE 7.0以上
+### 必須
+- Proxmox VE
 - bash
 - tar
-- rsync（オプション、ただし推奨）
-- ACLツール（オプション: getfacl, setfacl）
+- rsync
+- ACLツール（getfacl, setfacl）
+
+### 推奨
+- Proxmox VE 6.0以上（古いバージョンでは動作未確認）
 
 ## 関連情報
 
