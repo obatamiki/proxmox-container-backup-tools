@@ -98,13 +98,13 @@ rm -rf /opt/proxmox-container-tools
 ### 動作環境
 - Proxmox VE（6.0以上を推奨）
 
-### 追加インストールが必要な場合がある項目
+### ホスト側で必要なパッケージ
 - ACLツール（getfacl, setfacl）
   ```bash
   # Debian/Ubuntu系の場合
   apt install acl
   ```
-  ※ ACLツールがない場合でもスクリプトは動作しますが、ACLの保持機能は無効になります。
+  ※ ACLツールがない場合でもスクリプトは動作しますが、コンテナからコピーしたファイルのACL情報が保持されません。
 
 注: その他の必要なコンポーネント（bash, tar, rsync）はProxmox VEに標準で含まれています。
 
