@@ -71,6 +71,13 @@ git clone https://github.com/obatamiki/proxmox-container-tools.git /opt/proxmox-
 chmod +x /opt/proxmox-container-tools/pct_pull.sh
 ```
 
+3. システム全体からアクセスできるようにシンボリックリンクを作成:
+```bash
+ln -s /opt/proxmox-container-tools/pct_pull.sh /usr/local/bin/pct_pull
+```
+
+これにより、`pct_pull`コマンドとしてどこからでも実行できるようになります。
+
 ## 要件
 
 ### 動作環境
