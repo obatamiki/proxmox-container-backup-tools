@@ -78,6 +78,20 @@ ln -s /opt/proxmox-container-tools/pct_pull.sh /usr/local/bin/pct_pull
 
 これにより、`pct_pull`コマンドとしてどこからでも実行できるようになります。
 
+## アンインストール
+
+1. シンボリックリンクを削除:
+```bash
+rm /usr/local/bin/pct_pull
+```
+
+2. リポジトリを削除:
+```bash
+rm -rf /opt/proxmox-container-tools
+```
+
+注: 設定ファイルやバックアップは作成されないため、上記の手順で完全に削除されます。
+
 ## 要件
 
 ### 動作環境
