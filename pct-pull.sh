@@ -17,6 +17,7 @@ declare TEMP_TAR=""          # 一時tarファイルのパス
 declare BACKUP_DIR=""        # バックアップディレクトリのパス
 declare RESTORE_TARGET=""    # バックアップ復元先のパス
 declare ACL_TEMP_FILE=""     # ACL情報保存用の一時ファイル
+declare TEMP_TAR_CLEANED=false  # 一時ファイルが削除済みかどうかのフラグ
 
 # 使用方法を表示する関数
 show_usage() {
@@ -111,7 +112,7 @@ cleanup() {
     fi
 
     # コンテナ内の一時ファイルの削除（コンテナが実行中の場合のみ）
-    if [ -n "$CTID" ] && [ -n "$TEMP_TAR" ]; then
+    if [ -n "$CTID" ] && [ -n "$TEMP_TAR" ] && [ "$TEMP_TAR_CLEANED" = false ]; then
         if pct status "$CTID" | grep -q "status: running"; then
             if ! pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null; then
                 log_message "WARN" "コンテナ内の一時ファイルの削除に失敗しました: $TEMP_TAR"
@@ -624,7 +625,9 @@ if pct status "$CTID" | grep -q "status: running"; then
 
     # 一時ファイルの削除
     rm -rf "$HOST_TEMP_DIR"
-    pct exec "$CTID" -- rm -f "$TEMP_TAR"
+    if pct exec "$CTID" -- rm -f "$TEMP_TAR"; then
+        TEMP_TAR_CLEANED=true
+    fi
 
 else
     log_message "INFO" "コンテナは停止中です。直接ファイルシステムから取得を実行します..."
