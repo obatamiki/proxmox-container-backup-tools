@@ -73,15 +73,17 @@ chmod +x /opt/proxmox-container-tools/pct_pull.sh
 
 ## 要件
 
-### 必須
-- Proxmox VE
-- bash
-- tar
-- rsync
-- ACLツール（getfacl, setfacl）
+### 動作環境
+- Proxmox VE（6.0以上を推奨）
 
-### 推奨
-- Proxmox VE 6.0以上（古いバージョンでは動作未確認）
+### 追加インストールが必要な場合がある項目
+- ACLツール（getfacl, setfacl）
+  ```bash
+  # Debian/Ubuntu系の場合
+  apt install acl
+  ```
+
+注: その他の必要なコンポーネント（bash, tar, rsync）はProxmox VEに標準で含まれています。
 
 ## 関連情報
 
