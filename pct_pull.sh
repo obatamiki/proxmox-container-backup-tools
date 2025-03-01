@@ -18,6 +18,29 @@ declare BACKUP_DIR=""        # バックアップディレクトリのパス
 declare RESTORE_TARGET=""    # バックアップ復元先のパス
 declare ACL_TEMP_FILE=""     # ACL情報保存用の一時ファイル
 
+# 使用方法を表示する関数
+show_usage() {
+    echo "使用方法: $0 [-f] <CTID> <コンテナ内のパス> <ホスト上の出力先パス>"
+    echo "説明: Proxmoxコンテナからホストへファイルやディレクトリを取得します。"
+    echo "      標準のpct pullコマンドを拡張し、より安全で使いやすい機能を提供します。"
+    echo
+    echo "オプション:"
+    echo "  -f    確認プロンプトをスキップし、既存ファイルを上書き"
+    echo "  末尾のスラッシュ: コンテナ内のパスの末尾にスラッシュを付けると、"
+    echo "                     ディレクトリの中身のみを取得します。"
+    echo
+    echo "例:"
+    echo "  # ディレクトリごと取得（/backup/container100/html/ が作成される）"
+    echo "  $0 100 /var/www/html /backup/container100/"
+    echo
+    echo "  # ディレクトリの中身のみ取得（/backup/container100/ 直下にファイルが展開される）"
+    echo "  $0 100 /var/www/html/ /backup/container100/"
+    echo
+    echo "  # 単一ファイルの取得"
+    echo "  $0 100 /etc/nginx/nginx.conf /backup/container100/"
+    exit 1
+}
+
 # 引数の解析
 while getopts "fh" opt; do
     case $opt in
@@ -108,28 +131,6 @@ cleanup() {
 
 # クリーンアップ関数を登録
 trap cleanup EXIT
-
-# 使用方法を表示する関数
-show_usage() {
-    echo "使用方法: $0 <CTID> <コンテナ内のパス> <ホスト上の出力先パス>"
-    echo "説明: Proxmoxコンテナからホストへファイルやディレクトリを取得します。"
-    echo "      標準のpct pullコマンドを拡張し、より安全で使いやすい機能を提供します。"
-    echo
-    echo "オプション:"
-    echo "  末尾のスラッシュ: コンテナ内のパスの末尾にスラッシュを付けると、"
-    echo "                     ディレクトリの中身のみを取得します。"
-    echo
-    echo "例:"
-    echo "  # ディレクトリごと取得（/backup/container100/html/ が作成される）"
-    echo "  $0 100 /var/www/html /backup/container100/"
-    echo
-    echo "  # ディレクトリの中身のみ取得（/backup/container100/ 直下にファイルが展開される）"
-    echo "  $0 100 /var/www/html/ /backup/container100/"
-    echo
-    echo "  # 単一ファイルの取得"
-    echo "  $0 100 /etc/nginx/nginx.conf /backup/container100/"
-    exit 1
-}
 
 # バックアップ関連の関数
 create_backup() {
