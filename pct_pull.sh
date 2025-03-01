@@ -593,8 +593,11 @@ if pct status "$CTID" | grep -q "status: running"; then
     HOST_TEMP_TAR="$HOST_TEMP_DIR/temp.tar"
 
     # コンテナ内でtarファイルを作成
-    if ! pct exec "$CTID" -- bash -c "cd $(dirname "$CONTAINER_PATH") && tar czf $TEMP_TAR $(basename "$CONTAINER_PATH")"; then
+    if ! pct exec "$CTID" -- bash -c "cd $(dirname "$CONTAINER_PATH") && tar czf $TEMP_TAR $(basename "$CONTAINER_PATH")" 2>&1; then
         log_message "ERROR" "コンテナ内でのtarファイル作成に失敗しました。"
+        log_message "ERROR" "ディレクトリ: $(dirname "$CONTAINER_PATH")"
+        log_message "ERROR" "ターゲット: $(basename "$CONTAINER_PATH")"
+        pct exec "$CTID" -- ls -la "$(dirname "$CONTAINER_PATH")" || true
         rm -rf "$HOST_TEMP_DIR"
         pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null || true
         exit 1
@@ -616,6 +619,8 @@ if pct status "$CTID" | grep -q "status: running"; then
         log_message "ERROR" "ファイルの展開に失敗しました。"
         exit 1
     fi
+
+    log_message "INFO" "ファイルのコピーが完了しました。"
 
     # 一時ファイルの削除
     rm -rf "$HOST_TEMP_DIR"
@@ -675,6 +680,7 @@ else
                 restore_backup "$BACKUP_DIR" "$HOST_PATH"
                 exit 1
             fi
+            log_message "INFO" "ファイルのコピーが完了しました。"
         else
             target_dir="$HOST_PATH/$(basename "$CONTAINER_PATH")"
             BACKUP_DIR=$(create_backup "$target_dir")
@@ -683,6 +689,7 @@ else
                 restore_backup "$BACKUP_DIR" "$target_dir"
                 exit 1
             fi
+            log_message "INFO" "ファイルのコピーが完了しました。"
         fi
     else
         target_file="$HOST_PATH/$(basename "$CONTAINER_PATH")"
@@ -692,6 +699,7 @@ else
             restore_backup "$BACKUP_DIR" "$target_file"
             exit 1
         fi
+        log_message "INFO" "ファイルのコピーが完了しました。"
     fi
 fi
 
