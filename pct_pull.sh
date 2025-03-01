@@ -73,7 +73,7 @@ if [[ "$CONTAINER_PATH" =~ [[:space:]] ]] || [[ "$HOST_PATH" =~ [[:space:]] ]]; 
 fi
 
 # コンテナの存在確認
-if [ ! -d "/etc/pve/lxc/$CTID" ]; then
+if ! pct list | grep -q "^$CTID[[:space:]]"; then
     echo "エラー: コンテナ $CTID が存在しません。"
     exit 1
 fi
