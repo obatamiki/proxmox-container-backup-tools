@@ -114,10 +114,19 @@ cleanup() {
     # コンテナ内の一時ファイルの削除（コンテナが実行中の場合のみ）
     if [ -n "$CTID" ] && [ -n "$TEMP_TAR" ] && [ "$TEMP_TAR_CLEANED" = false ]; then
         if pct status "$CTID" | grep -q "status: running"; then
-            if ! pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null; then
+            # 削除を3回まで試行
+            local retry=0
+            while [ $retry -lt 3 ]; do
+                if pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null; then
+                    log_message "INFO" "コンテナ内の一時ファイルを削除しました: $TEMP_TAR"
+                    TEMP_TAR_CLEANED=true
+                    break
+                fi
+                retry=$((retry + 1))
+                [ $retry -lt 3 ] && sleep 1
+            done
+            if [ "$TEMP_TAR_CLEANED" = false ]; then
                 log_message "WARN" "コンテナ内の一時ファイルの削除に失敗しました: $TEMP_TAR"
-            else
-                log_message "INFO" "コンテナ内の一時ファイルを削除しました: $TEMP_TAR"
             fi
         fi
     fi
@@ -131,7 +140,12 @@ cleanup() {
     # umaskを元に戻す
     umask "$ORIGINAL_UMASK"
 
-    exit "$exit_code"
+    # 一時ファイルの削除に失敗しても、メインの処理が成功していれば0を返す
+    if [ $exit_code -eq 0 ]; then
+        exit 0
+    else
+        exit "$exit_code"
+    fi
 }
 
 # クリーンアップ関数を登録
@@ -625,8 +639,12 @@ if pct status "$CTID" | grep -q "status: running"; then
 
     # 一時ファイルの削除
     rm -rf "$HOST_TEMP_DIR"
-    if pct exec "$CTID" -- rm -f "$TEMP_TAR"; then
+    if pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null; then
         TEMP_TAR_CLEANED=true
+        log_message "INFO" "コンテナ内の一時ファイルを削除しました: $TEMP_TAR"
+    else
+        # 削除に失敗した場合は、クリーンアップ関数で再試行するためフラグは設定しない
+        log_message "WARN" "コンテナ内の一時ファイルの削除を後で再試行します: $TEMP_TAR"
     fi
 
 else
