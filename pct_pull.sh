@@ -588,11 +588,19 @@ if pct status "$CTID" | grep -q "status: running"; then
     HOST_TEMP_DIR=$(mktemp -d)
     HOST_TEMP_TAR="$HOST_TEMP_DIR/temp.tar"
 
-    # tarファイルをコンテナからホストに取得
-    if ! pct pull $CTID $TEMP_TAR $HOST_TEMP_TAR; then
-        echo "エラー: tarファイルの取得に失敗しました。"
+    # コンテナ内でtarファイルを作成
+    if ! pct exec "$CTID" -- bash -c "cd $(dirname "$CONTAINER_PATH") && tar czf $TEMP_TAR $(basename "$CONTAINER_PATH")"; then
+        log_message "ERROR" "コンテナ内でのtarファイル作成に失敗しました。"
         rm -rf "$HOST_TEMP_DIR"
-        pct exec $CTID -- rm -f "$TEMP_TAR"
+        pct exec "$CTID" -- rm -f "$TEMP_TAR" 2>/dev/null || true
+        exit 1
+    fi
+
+    # tarファイルをコンテナからホストに取得
+    if ! pct pull "$CTID" "$TEMP_TAR" "$HOST_TEMP_TAR"; then
+        log_message "ERROR" "tarファイルの取得に失敗しました。"
+        rm -rf "$HOST_TEMP_DIR"
+        pct exec "$CTID" -- rm -f "$TEMP_TAR"
         exit 1
     fi
 
@@ -607,7 +615,7 @@ if pct status "$CTID" | grep -q "status: running"; then
 
     # 一時ファイルの削除
     rm -rf "$HOST_TEMP_DIR"
-    pct exec $CTID -- rm -f "$TEMP_TAR"
+    pct exec "$CTID" -- rm -f "$TEMP_TAR"
 
 else
     log_message "INFO" "コンテナは停止中です。直接ファイルシステムから取得を実行します..."
