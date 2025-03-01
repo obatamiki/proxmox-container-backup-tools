@@ -196,7 +196,42 @@ restore_backup() {
 check_target_exists() {
     local target="$1"
     if [ -e "$target" ]; then
-        echo "警告: $target は既に存在します。"
+        log_message "WARN" "$target は既に存在します。"
+        
+        # ディレクトリの場合、実際の衝突を確認
+        if [ -d "$target" ]; then
+            local conflicts=()
+            if [ -n "$CTID" ] && pct status "$CTID" | grep -q "status: running"; then
+                # コンテナ実行中の場合
+                while IFS= read -r file; do
+                    if [ -e "$target/$file" ]; then
+                        conflicts+=("$file")
+                    fi
+                done < <(pct exec "$CTID" -- find "$CONTAINER_PATH" -mindepth 1 -maxdepth 1 -printf '%P\n')
+            else
+                # コンテナ停止中の場合
+                local rootfs_path="/var/lib/lxc/$CTID/rootfs"
+                while IFS= read -r file; do
+                    if [ -e "$target/$file" ]; then
+                        conflicts+=("$file")
+                    fi
+                done < <(find "$rootfs_path$CONTAINER_PATH" -mindepth 1 -maxdepth 1 -printf '%P\n')
+            fi
+
+            if [ ${#conflicts[@]} -gt 0 ]; then
+                log_message "INFO" "以下のファイル/ディレクトリが上書きされる可能性があります:"
+                printf '%s\n' "${conflicts[@]/#/- }"
+            else
+                log_message "INFO" "既存のファイルと衝突する可能性のあるファイルは見つかりませんでした。"
+            fi
+        fi
+
+        if [ "$FORCE" = true ]; then
+            log_message "INFO" "強制モードが有効なため、自動的に上書きします。"
+            BACKUP_DIR=$(create_backup "$target")
+            return
+        fi
+
         read -p "上書きしますか？ (y/N): " response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
             echo "取得を中止します。"
